@@ -3,13 +3,13 @@ const github = require("@actions/github");
 const got = require("got");
 const process = require("process");
 
-const hyperjump_url = "http://github.aws.hlw3truzy4ls.com:6080/hyperjump/jump";
+const hyperjump_url = "https://github.aws.hlw3truzy4ls.com:1443/hyperjump/jump";
 
 async function main() {
   try {
     const { owner, repo, number } = github.context.issue;
-    const users = core.getInput("users", {required: false});
-    const teams = core.getInput("teams", {required: false});
+    const users = core.getInput("users", { required: false });
+    const teams = core.getInput("teams", { required: false });
 
     if (!users && !teams) {
       core.warning("users and teams fields both empty");
@@ -17,13 +17,13 @@ async function main() {
     }
 
     const user_list = (users || "")
-          .split(",")
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
     const team_list = (teams || "")
-          .split(",")
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
     // trigger the hyperjump
     const body = {
