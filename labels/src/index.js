@@ -3,22 +3,22 @@ const github = require("@actions/github");
 const got = require("got");
 const process = require("process");
 
-const hyperjump_url = "http://github.aws.hlw3truzy4ls.com:6080/hyperjump/jump";
+const hyperjump_url = "https://github.aws.hlw3truzy4ls.com:1443/hyperjump/jump";
 
 async function main() {
   try {
     const { owner, repo, number } = github.context.issue;
-    const add_labels = core.getInput("add", {required: false});
-    const remove_labels = core.getInput("remove", {required: false});
+    const add_labels = core.getInput("add", { required: false });
+    const remove_labels = core.getInput("remove", { required: false });
 
     const add_list = (add_labels || "")
-          .split(",")
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
     const remove_list = (remove_labels || "")
-          .split(",")
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
     // trigger the hyperjump
     const body = {
