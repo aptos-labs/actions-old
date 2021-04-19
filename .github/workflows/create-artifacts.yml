@@ -1,0 +1,24 @@
+# This action creates a dummy artifact, to be tested by the "test-download-artifacts" workflow.
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  create-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create dummy artifacts
+        run: |
+          echo "This dummy artifact should be downloaded" > test-file.download
+          echo "This dummy artifact SHOULD NOT be downloaded" > test-file.not-download
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test.download
+          path: test-file.download
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test.not-download
+          path: test-file.not-download

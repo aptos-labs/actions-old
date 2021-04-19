@@ -1,0 +1,21 @@
+name: Download artifacts
+description: Download GitHub artifacts
+inputs:
+  run-id:
+    description: Workflow run ID
+    required: true
+  pattern:
+    description: Regex of artifact names to download
+    required: false
+    default: '.*'
+  path:
+    description: Destination directory to write artifacts to
+    required: false
+    default: 'artifacts'
+  extract:
+    description: If 'true', unzip artifacts into separate directories
+    required: false
+    default: 'false'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

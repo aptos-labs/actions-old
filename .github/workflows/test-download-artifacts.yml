@@ -1,0 +1,28 @@
+# This action tests the "download-artifacts" action. Note that it runs on workflow_run events, so changes must
+# be checked into the main branch before they can be tested.
+
+on:
+  workflow_run:
+    workflows: ["create-artifacts"]
+    types:
+      - completed
+
+jobs:
+  process-artifacts:
+    runs-on: ubuntu-latest
+    name: Process artifacts
+    steps:
+      - name: Download and extract artifacts
+        uses: ./download-artifacts
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: '^.*\.download$'
+          extract: true
+      - name: Test that "test.download" got downloaded
+        run: |
+          [[ -f artifacts/test.download.zip ]]
+          cat artifacts/test.download/test-file.download
+      - name: Test that "test.not-download" did not get downloaded
+        run: |
+          [[ ! -f artifacts/test.not-download.zip ]]
+          [[ ! -f artifacts/test.not-download/test-file.not-download ]]
