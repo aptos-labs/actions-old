@@ -40,6 +40,13 @@ jobs:
         # ...
 ```
 
+## Testing
+
+This repository has a basic integration test for this action. To test:
+* Land your changes on master.
+* Open [this URL](https://github.com/diem/actions/actions/workflows/test-download-artifacts.yml) and see that
+  the `workflow_run` that is kicked off succeeds.
+
 ## Updating
 
 After making changes to `src/index.js` you must run `npm run prepare` to
