@@ -8,7 +8,7 @@ inputs:
     description: Regex of artifact names to download
     required: false
     default: '.*'
-  path:
+  dir:
     description: Destination directory to write artifacts to
     required: false
     default: 'artifacts'

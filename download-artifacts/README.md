@@ -29,8 +29,8 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           # "pattern" specifies a regex of artifact names to download. Default is to download all artifacts.
           pattern: '^.*-test-results$'
-          # "path" is the destination directory to write out artifacts to. The default is "artifacts".
-          path: 'my-artifacts'
+          # "dir" is the destination directory to write out artifacts to. The default is "artifacts".
+          dir: 'my-artifacts'
           # If "extract" is set to true, artifacts will be unzipped to path/<artifact-name>. Defaults to false.
           extract: true
       # At this point, the artifacts are available in the "artifacts" directory. They can be processed as appropriate.

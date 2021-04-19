@@ -6075,10 +6075,10 @@ async function main() {
     const run_id = parseInt(core.getInput("run-id", {required: true}));
     // These aren't required but have defaults, so pass in required: true.
     const pattern = core.getInput("pattern", {required: true});
-    const artifact_path = core.getInput("path", {required: true});
+    const artifact_dir = core.getInput("dir", {required: true});
     const extract = core.getInput("extract", {required: true}) === 'true';
 
-    const dest_path = path.join(github.workspace, artifact_path);
+    const dest_dir = path.join(github.workspace, artifact_dir);
     fs.mkdirSync(dest_path, {recursive: true});
 
     const owner = github.context.repo.owner;
@@ -6105,14 +6105,14 @@ async function main() {
         archive_format: 'zip',
       });
 
-      const this_artifact_path = path.join(artifacts_path, `${artifact.name}.zip`)
+      const artifact_path = path.join(dest_dir, `${artifact.name}.zip`)
       fs.writeFileSync(artifact_path, Buffer.from(download.data));
-      console.log(`Downloaded ${this_artifact_path}`);
+      console.log(`Downloaded ${artifact_path}`);
 
       if (extract) {
-        const target = path.join(artifacts_path, artifact.name);
+        const target = path.join(dest_dir, artifact.name);
         await extract_zip(artifact_path, {dir: target});
-        console.log(`Extracted ${this_artifact_path} to ${target}`)
+        console.log(`Extracted ${artifact_path} to ${target}`)
       }
     }
   } catch (error) {
