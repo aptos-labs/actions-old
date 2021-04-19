@@ -1,6 +1,8 @@
 # This action tests the "download-artifacts" action. Note that it runs on workflow_run events, so changes must
 # be checked into the main branch before they can be tested.
 
+name: 'test-download-artifacts'
+
 on:
   workflow_run:
     workflows: ["create-artifacts"]

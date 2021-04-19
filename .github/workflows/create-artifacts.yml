@@ -1,5 +1,7 @@
 # This action creates a dummy artifact, to be tested by the "test-download-artifacts" workflow.
 
+name: 'create-artifacts'
+
 on:
   pull_request:
     branches: [master]
