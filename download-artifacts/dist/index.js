@@ -6105,14 +6105,14 @@ async function main() {
         archive_format: 'zip',
       });
 
-      var artifact_path = path.join(artifacts_path, `${artifact.name}.zip`)
+      const this_artifact_path = path.join(artifacts_path, `${artifact.name}.zip`)
       fs.writeFileSync(artifact_path, Buffer.from(download.data));
-      console.log(`Downloaded ${artifact_path}`);
+      console.log(`Downloaded ${this_artifact_path}`);
 
       if (extract) {
         const target = path.join(artifacts_path, artifact.name);
         await extract_zip(artifact_path, {dir: target});
-        console.log(`Extracted ${artifact_path} to ${target}`)
+        console.log(`Extracted ${this_artifact_path} to ${target}`)
       }
     }
   } catch (error) {
