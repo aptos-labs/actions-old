@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const fs = require('fs');
 const path = require('path');
+const process = require('process');
 const extract_zip = require('extract-zip');
 
 async function main() {
@@ -15,7 +16,7 @@ async function main() {
 
     const octokit = github.getOctokit(github_token);
 
-    const dest_dir = path.join(octokit.workspace, artifact_dir);
+    const dest_dir = path.join(process.env.GITHUB_WORKSPACE, artifact_dir);
     fs.mkdirSync(dest_path, {recursive: true});
 
     const owner = github.context.repo.owner;
@@ -53,6 +54,7 @@ async function main() {
       }
     }
   } catch (error) {
+    console.error(error);
     core.setFailed(error.message);
   }
 }

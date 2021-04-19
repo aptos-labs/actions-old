@@ -6068,6 +6068,7 @@ const core = __webpack_require__(470);
 const github = __webpack_require__(469);
 const fs = __webpack_require__(747);
 const path = __webpack_require__(622);
+const process = __webpack_require__(765);
 const extract_zip = __webpack_require__(641);
 
 async function main() {
@@ -6081,7 +6082,7 @@ async function main() {
 
     const octokit = github.getOctokit(github_token);
 
-    const dest_dir = path.join(octokit.workspace, artifact_dir);
+    const dest_dir = path.join(process.env.GITHUB_WORKSPACE, artifact_dir);
     fs.mkdirSync(dest_path, {recursive: true});
 
     const owner = github.context.repo.owner;
@@ -6119,6 +6120,7 @@ async function main() {
       }
     }
   } catch (error) {
+    console.error(error);
     core.setFailed(error.message);
   }
 }
@@ -6367,6 +6369,13 @@ exports.request = request;
 /***/ (function(module) {
 
 module.exports = require("zlib");
+
+/***/ }),
+
+/***/ 765:
+/***/ (function(module) {
+
+module.exports = require("process");
 
 /***/ }),
 
