@@ -17,7 +17,7 @@ async function main() {
     const octokit = github.getOctokit(github_token);
 
     const dest_dir = path.join(process.env.GITHUB_WORKSPACE, artifact_dir);
-    fs.mkdirSync(dest_path, {recursive: true});
+    fs.mkdirSync(dest_dir, {recursive: true});
 
     const owner = github.context.repo.owner;
     const repo = github.context.repo.repo;
