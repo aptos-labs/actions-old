@@ -6088,7 +6088,7 @@ async function main() {
     const owner = github.context.repo.owner;
     const repo = github.context.repo.repo;
 
-    var artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
+    var artifacts = await octokit.actions.listWorkflowRunArtifacts({
       owner: owner,
       repo: repo,
       run_id: run_id
@@ -6102,7 +6102,7 @@ async function main() {
         continue;
       }
 
-      var download = await octokit.rest.actions.downloadArtifact({
+      var download = await octokit.actions.downloadArtifact({
         owner: owner,
         repo: repo,
         artifact_id: artifact.id,
