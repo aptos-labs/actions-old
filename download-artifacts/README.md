@@ -25,6 +25,8 @@ jobs:
       - name: Download and extract artifacts
         uses: diem/actions/download-artifacts@<version>
         with:
+          # The GitHub token.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           # The ID for the workflow run.
           run-id: ${{ github.event.workflow_run.id }}
           # "pattern" specifies a regex of artifact names to download. Default is to download all artifacts.

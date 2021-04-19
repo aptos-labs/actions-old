@@ -1,6 +1,9 @@
 name: Download artifacts
 description: Download GitHub artifacts
 inputs:
+  github-token:
+    description: GitHub token
+    required: true
   run-id:
     description: Workflow run ID
     required: true

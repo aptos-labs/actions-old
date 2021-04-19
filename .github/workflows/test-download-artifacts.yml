@@ -18,6 +18,7 @@ jobs:
       - name: Download and extract artifacts
         uses: ./download-artifacts
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
           pattern: '^.*\.download$'
           extract: true

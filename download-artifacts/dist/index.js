@@ -6072,19 +6072,22 @@ const extract_zip = __webpack_require__(641);
 
 async function main() {
   try {
+    const github_token = core.getInput("github-token", {required: true});
     const run_id = parseInt(core.getInput("run-id", {required: true}));
     // These aren't required but have defaults, so pass in required: true.
     const pattern = core.getInput("pattern", {required: true});
     const artifact_dir = core.getInput("dir", {required: true});
     const extract = core.getInput("extract", {required: true}) === 'true';
 
-    const dest_dir = path.join(github.workspace, artifact_dir);
+    const octokit = github.getOctokit(github_token);
+
+    const dest_dir = path.join(octokit.workspace, artifact_dir);
     fs.mkdirSync(dest_path, {recursive: true});
 
     const owner = github.context.repo.owner;
     const repo = github.context.repo.repo;
 
-    var artifacts = await github.actions.listWorkflowRunArtifacts({
+    var artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
       owner: owner,
       repo: repo,
       run_id: run_id
@@ -6098,7 +6101,7 @@ async function main() {
         continue;
       }
 
-      var download = await github.actions.downloadArtifact({
+      var download = await octokit.rest.actions.downloadArtifact({
         owner: owner,
         repo: repo,
         artifact_id: artifact.id,
