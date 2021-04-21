@@ -4,6 +4,8 @@ inputs:
   workflow-file:
     description: "local repository path to the workflow file, no leading slash."
     required: true
+  github-token:
+    description: "if a private repo, the github token from github actions"
 outputs:
   changes-base-githash:
     description: The shared git hash of a pr, a bors target branch, or the last successful build of the workflow-file on the branch.
@@ -27,8 +29,11 @@ runs:
           echo BASE_GITHASH is likely to not be found even if it would otherwise be the immediate prior revision. 1>&2
         fi
 
-        ls $GITHUB_ACTION_PATH
-        eval $(${GITHUB_ACTION_PATH}/get_pr_info.sh -w "${WORKFLOW}" -b -d)
+        if [ -z "${GITHUB_TOKEN}" ]; then
+          eval $(${GITHUB_ACTION_PATH}/get_pr_info.sh -w "${WORKFLOW}" -b -d)
+        else
+          eval $(${GITHUB_ACTION_PATH}/get_pr_info.sh -w "${WORKFLOW}" -b -d -t ${GITHUB_TOKEN})
+        fi
 
         echo "CHANGES_TARGET_BRANCH=${CHANGES_TARGET_BRANCH}" >> $GITHUB_ENV
         echo "CHANGES_BASE_GIT_REV=${CHANGES_BASE_GIT_REV}" >> $GITHUB_ENV
@@ -57,3 +62,4 @@ runs:
       shell: bash
       env:
         WORKFLOW: ${{ inputs.workflow-file }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}

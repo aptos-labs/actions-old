@@ -36,17 +36,21 @@ function usage() {
 #Optional: if a private repo
 GITHUB_USERNAME=;
 GITHUB_PASSWORD=;
+GITHUB_TOKEN=;
 BORS=false
 DEBUG=false
 WORKFLOW_FILE=;
 
-while getopts 'u:p:g:bdw:h' OPTION; do
+while getopts 'u:p:t:g:bdw:h' OPTION; do
   case "$OPTION" in
     u)
       GITHUB_USERNAME="$OPTARG"
       ;;
     p)
       GITHUB_PASSWORD="$OPTARG"
+      ;;
+    t)
+      GITHUB_TOKEN="$OPTARG"
       ;;
     b)
       BORS=true
@@ -71,9 +75,11 @@ if [[ -z "${WORKFLOW_FILE}" ]]; then
 fi
 
 #calculate the login for curl
-LOGIN="";
+LOGIN=();
 if [[ -n "${GITHUB_USERNAME}" ]] && [[ -n "${GITHUB_PASSWORD}" ]]; then
-  LOGIN="--user ${GITHUB_USERNAME}:${GITHUB_PASSWORD}"
+  LOGIN=( "--user" "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" )
+elif [[ -n "${GITHUB_TOKEN}" ]]; then
+  LOGIN=( "--header" "authorization: Bearer ${GITHUB_TOKEN}" )
 fi
 
 # Find the git repo slug.   If gha use GITHUB_REPOSITORY, if CircleCi use CIRCLE_PROJECT_USERNAME/CIRCLE_PROJECT_REPONAME
@@ -99,7 +105,7 @@ $DEBUG && echoerr BRANCH="$BRANCH"
 BASE_GITHASH=
 if [[ "${GITHUB_EVENT_NAME}" == "push" || "${GITHUB_EVENT_NAME}" == "create" ]] && [[ "$BORS" == false || ( "$BRANCH" != "auto" && "$BRANCH" != "canary" ) ]]; then
   $DEBUG && echoerr URL="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_FILE}/runs?branch=${BRANCH}&status=completed"
-  QUERIED_GITHASH="$( curl "$LOGIN" -H 'Accept: application/vnd.github.v3+json' "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_FILE}/runs?branch=${BRANCH}&status=completed" 2>/dev/null | jq '.workflow_runs[0].head_sha' | sed 's/"//g')"
+  QUERIED_GITHASH="$( curl "${LOGIN[@]}"  -H 'Accept: application/vnd.github.v3+json' "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_FILE}/runs?branch=${BRANCH}&status=completed" 2>/dev/null | jq '.workflow_runs[0].head_sha' | sed 's/"//g')"
   $DEBUG && echoerr QUERIED_GITHASH="$QUERIED_GITHASH"
   #If we have a git hash, and it exist in the history of the current HEAD, then use it as BASE_GITHASH
   if [[ -n "$QUERIED_GITHASH" ]] && [[ $(git merge-base --is-ancestor "$QUERIED_GITHASH" "$(git rev-parse HEAD)" 2>/dev/null; echo $?) == 0 ]]; then
@@ -126,7 +132,7 @@ $DEBUG && echoerr PR_NUMBER="$PR_NUMBER"
 
 #look up the pr with the pr number
 if [[ -n ${PR_NUMBER} ]] && [[ -z ${TARGET_BRANCH} ]]; then
-  PR_RESPONSE=$(curl -s "$LOGIN" "${GITHUB_API_URL}/repos/${GITHUB_SLUG}/pulls/$PR_NUMBER")
+  PR_RESPONSE=$(curl -s "${LOGIN[@]}"  "${GITHUB_API_URL}/repos/${GITHUB_SLUG}/pulls/$PR_NUMBER")
   if [[ -n ${PR_RESPONSE} ]] && [[ $(echo "$PR_RESPONSE" | jq -e '.message') != '"Not Found"' ]]; then
     PR_BASE_BRANCH=$(echo "$PR_RESPONSE" | jq -e '.base.ref' | tr -d '"')
   fi
