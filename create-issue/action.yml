@@ -1,0 +1,21 @@
+name: Create issue
+description: Create an issue or update an existing open issue of matching title
+inputs:
+  github-token:
+    description: GitHub token
+    required: true
+  title:
+    description: issue title
+    required: true
+  body:
+    description: issue body
+    required: true
+  assignees:
+    description: user list (comma separated)
+    required: false
+  labels:
+    description: label list (comma separated)
+    required: false
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
