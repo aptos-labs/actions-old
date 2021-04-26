@@ -1,0 +1,57 @@
+name: "Get Artifacts"
+description: |
+  Get artifacts from either a single workflow_run, or from the latest workflow runs for a workflow/branch combo.
+  If a folder dedicated to holding a particular workflow_run's artifacts has already been constructed in the target output
+  folder, the artifacts for that build will not attempt to be downloaded then unzipped.
+inputs:
+  token:
+    description: github token, needed to access artifacts
+    required: true
+  target_dir:
+    default: ${{ github.workspace }}/downloads
+    description: The root folder to pull all artifact files in to (under a subfolder named for the workflow_run_id).
+    required: false
+  artifacts:
+    description: Space seperated names of artifacts to download.
+    required: true
+  repo:
+    default: ${{ github.repository }}
+    description: Target repo to pull artifacts from (defaults to current repo.) Should be in slug form (ie, diem/diem).
+    required: false
+  workflow_file:
+    description: The workflow filename used to find workflow job history. Not compatible with workflow_id.
+    required: false
+  branch:
+    description: The target branch to pull artifacts from (defaults to current branch).  Not compatible with workflow_id.
+    required: false
+  history:
+    description: The number of historic runs to gather artifacts from.
+    default: "10"
+    required: false
+  workflow_run_id:
+    description: A specific workflow execution to pull artifacts from.
+    required: false
+  decompress:
+    default: "true"
+    description: should artifacts be unzipped and original zips deleted
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        extra_param=()
+        if [ "$DECOMPRESS" = "true" ]; then
+          extra_param+=("-z")
+        fi
+        ${GITHUB_ACTION_PATH}/get_artifacts.sh -d "$TARGET_DIR" -a "$ARTIFACTS" -w "$WORKFILE" -b "$BRANCH" -r "$REPOSITORY" -h "$HISTORY" -i "$WORKFLOW_RUN_ID" -t "${GITHUB_TOKEN}" "${extra_param[@]}"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        TARGET_DIR: ${{ inputs.target_dir }}
+        ARTIFACTS: ${{ inputs.artifacts }}
+        REPOSITORY: ${{ inputs.repo }}
+        WORKFILE: ${{ inputs.workflow_file }}
+        BRANCH: ${{ inputs.branch }}
+        HISTORY: ${{ inputs.history }}
+        WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
+        DECOMPRESS: ${{ inputs.decompress }}

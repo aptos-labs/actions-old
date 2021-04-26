@@ -1,36 +1,14 @@
-# This action tests the "download-artifacts" action. Note that it runs on workflow_run events, so changes must
-# be checked into the main branch before they can be tested.
+# Get Artifacts #
 
-name: "test-download-artifacts"
+A downloader for artifacts from multiple prior workflow_runs, or a single run by workflow_run_id.
 
-on:
-  workflow_run:
-    workflows: ["create-artifacts"]
-    types:
-      - completed
+Artifacts are always uploaded as zips, correspondingly this action allows you unzip and then delete the original downloads with the "decompress" flags.
 
-jobs:
-  test-download-artifacts:
-    runs-on: ubuntu-latest
-    name: test download-artifacts
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download and extract artifacts
-        uses: ./download-artifacts
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-          pattern: '^.*\.download$'
-          extract: true
-      - name: Test that "test.download" got downloaded
-        run: |
-          [[ -f artifacts/test.download.zip ]]
-          cat artifacts/test.download/test-file.download
-      - name: Test that "test.not-download" did not get downloaded
-        run: |
-          [[ ! -f artifacts/test.not-download.zip ]]
-          [[ ! -f artifacts/test.not-download/test-file.not-download ]]
+If a ```${{ inputs.target_dir }}/<workflow_run_id>``` folder already exist no attempt will be made to download the artifacts for that run.
 
+Download artifacts from one workflow run.
+
+```
   test-get-artifacts-single:
     runs-on: ubuntu-latest
     name: test get-artifacts single job
@@ -51,7 +29,11 @@ jobs:
       - name: Test that "test.not-download" did not get downloaded
         run: |
           [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
+```
 
+Download artifacts from multiple workflow runs, newest to oldest by repo (optional, calculated), branch (optional, ignored), and workflow_file name (mandatory).
+
+```
   test-get-artifacts-multiple:
     runs-on: ubuntu-latest
     name: test get-artifacts-multiple
@@ -69,3 +51,4 @@ jobs:
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
           [[ $( ls -l ${{ github.workspace }}/downloads/ | wc -l ) -gt 1 ]]
+```
