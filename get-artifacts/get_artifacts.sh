@@ -93,6 +93,8 @@ if [[ -z "${WORKFLOW_RUN_ID}" ]]; then
 fi
 
 curl_attri=("--retry" "3")
+curl_attri+=("--silent")
+curl_attri+=("--show-error")
 curl_attri+=('-H' 'Accept: application/vnd.github.v3+json')
 if [ -n "$TOKEN" ]; then
   curl_attri+=('-H' "authorization: Bearer ${TOKEN}")
@@ -125,14 +127,14 @@ echoerr Curl Parameters: "${curl_attri[@]}"
 function get_artifacts_from_workflow() {
   workflow_run_id=$1;
   echoerr getting artifacts for jobId "$workflow_run_id"
-  artifact_info="$( curl -s -S "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${workflow_run_id}/artifacts" )"
+  artifact_info="$( curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${workflow_run_id}/artifacts" )"
   for artifact_name in "${ARTIFACTS[@]}"; do
     if [ ! -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}" ]; then
       mkdir -p "${TARGET_DIR}/${workflow_run_id}/${artifact_name}"
       download_url_str="$(echo "$artifact_info" | jq '.artifacts[] | select(.name=="'"${artifact_name}"'") .archive_download_url')"
       if [ -n "$download_url_str" ] && [ "$download_url_str" != "null" ]; then
         download_url="${download_url_str//\"/}"
-        curl -L -s -S "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
+        curl -L "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
         if [ "$DECOMPRESS" = "true" ]; then
           unzip -q "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip" -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/"
           rm "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
@@ -157,7 +159,7 @@ function get_workflow_run_ids() {
   if [ -n "$BRANCH" ]; then
     PARAMETERS="branch=${BRANCH}&"
   fi
-  curl -s -S "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?${PARAMETERS}status=completed&per_page=${HISTORY}" > "$tmpfile"
+  curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?${PARAMETERS}status=completed&per_page=${HISTORY}" > "$tmpfile"
   workflow_ids="$(jq '.workflow_runs[].id' < "$tmpfile")"
   echo "${workflow_ids}"
   rm "$tmpfile"
