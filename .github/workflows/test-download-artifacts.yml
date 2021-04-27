@@ -5,7 +5,7 @@ name: "test-download-artifacts"
 
 on:
   workflow_run:
-    workflows: ["create-artifacts"]
+    workflows: ["ci-test"]
     types:
       - completed
 
@@ -61,7 +61,7 @@ jobs:
         uses: ./get-artifacts
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file: create-artifacts.yml
+          workflow_file: ci-test.yml
           artifacts: test.download test.not-download
           branch: master
       - name: Test that "test.download" got downloaded

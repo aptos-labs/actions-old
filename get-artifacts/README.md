@@ -13,7 +13,7 @@ Download artifacts from one workflow run.
 ```yaml
   test-get-artifacts-single:
     runs-on: ubuntu-latest
-    name: test get-artifacts single job
+    name: test get-artifacts from a single workflow run
     steps:
       - uses: actions/checkout@v2
       - name: Download and extract single run's artifacts.
@@ -22,12 +22,13 @@ Download artifacts from one workflow run.
           token: ${{ secrets.GITHUB_TOKEN }}
           workflow_run_id: ${{ github.event.workflow_run.id }}
           artifacts: test.download
-          # the following lines are defaults included for clarity.
+          # the following two lines are default values included for clarity.
           target_dir: ${{ github.workspace }}/downloads
           decompress: true
       - name: Test that "test.download" got downloaded
         run: |
           [[ -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
+          [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) = 1 ]
       - name: Test that "test.not-download" did not get downloaded
         run: |
           [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
@@ -38,19 +39,22 @@ Download artifacts from multiple workflow runs, newest to oldest by repo (option
 ```yaml
   test-get-artifacts-multiple:
     runs-on: ubuntu-latest
-    name: test get-artifacts-multiple
+    name: test get-artifacts multiple workflow runs.
     steps:
       - uses: actions/checkout@v2
-      - name: Download and extract single run's artifacts.
+      - name: Download and extract artifacts from the last ten runs of ci-test.yml on the master branch.
         uses: ./get-artifacts
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          workflow_file: create-artifacts.yml
+          workflow_file: ci-test.yml
           artifacts: test.download test.not-download
+          # optional, otherwise all branches.
           branch: master
-      - name: Test that multiple jobs files got downloaded
+          # follow line is a default value included for clarity.
+          history: 10
+      - name: Test that multiple workflow run's files got downloaded
         run: |
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
-          [[ $( ls -l ${{ github.workspace }}/downloads/ | wc -l ) -gt 1 ]]
+          [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) -gt 1 ]
 ```
