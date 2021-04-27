@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# fast fail.
+set -eo pipefail
+
 function echoerr() {
   cat <<< "$@" 1>&2;
 }
@@ -88,9 +92,8 @@ if [[ -z "${WORKFLOW_RUN_ID}" ]]; then
   fi
 fi
 
-# Retry seems to add a lot of time overhead.  Need to look in to this more.
-# curl_attri=("--retry" "3")
-curl_attri=('-H' 'Accept: application/vnd.github.v3+json')
+curl_attri=("--retry" "3")
+curl_attri+=('-H' 'Accept: application/vnd.github.v3+json')
 if [ -n "$TOKEN" ]; then
   curl_attri+=('-H' "authorization: Bearer ${TOKEN}")
 fi
