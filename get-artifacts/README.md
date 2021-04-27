@@ -1,14 +1,16 @@
 # Get Artifacts #
 
-A downloader for artifacts from multiple prior workflow_runs, or a single run by workflow_run_id.
+A downloader for artifacts from multiple prior workflow_runs (by workflow_file_name and branch), or a single run by workflow_run_id.
 
-Artifacts are always uploaded as zips, correspondingly this action allows you unzip and then delete the original downloads with the "decompress" flags.
+Artifacts are always uploaded as zips, correspondingly this action allows you to unzip and then delete the original downloads with the "decompress" flags.
 
-If a ```${{ inputs.target_dir }}/<workflow_run_id>``` folder already exist no attempt will be made to download the artifacts for that run.
+If an ```${{ inputs.target_dir }}/<workflow_run_id>/<artifact_name>/``` folder already exist no attempt will be made to download the artifacts for that run.  The assumption it github's cache action can be use to preserve prior downloads between workflow executions, preventing unnecessary downloads.  More info on cacheing [here](https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows "caching-dependencies-to-speed-up-workflows").
+
+## Examples ##
 
 Download artifacts from one workflow run.
 
-```
+```yaml
   test-get-artifacts-single:
     runs-on: ubuntu-latest
     name: test get-artifacts single job
@@ -20,7 +22,7 @@ Download artifacts from one workflow run.
           token: ${{ secrets.GITHUB_TOKEN }}
           workflow_run_id: ${{ github.event.workflow_run.id }}
           artifacts: test.download
-          #these are defaults
+          # the following lines are defaults included for clarity.
           target_dir: ${{ github.workspace }}/downloads
           decompress: true
       - name: Test that "test.download" got downloaded
@@ -31,9 +33,9 @@ Download artifacts from one workflow run.
           [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
 ```
 
-Download artifacts from multiple workflow runs, newest to oldest by repo (optional, calculated), branch (optional, ignored), and workflow_file name (mandatory).
+Download artifacts from multiple workflow runs, newest to oldest by repo (optional, calculated), branch (optional, ignored), and workflow_file name (mandatory).  The workflow_file must be the full name of the workflow file in the .github/workflows/ directory.
 
-```
+```yaml
   test-get-artifacts-multiple:
     runs-on: ubuntu-latest
     name: test get-artifacts-multiple
@@ -46,7 +48,7 @@ Download artifacts from multiple workflow runs, newest to oldest by repo (option
           workflow_file: create-artifacts.yml
           artifacts: test.download test.not-download
           branch: master
-      - name: Test that "test.download" got downloaded
+      - name: Test that multiple jobs files got downloaded
         run: |
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
           [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]

@@ -96,12 +96,12 @@ if [ -n "$TOKEN" ]; then
 fi
 echoerr Curl Parameters: "${curl_attri[@]}"
 
-
-# Conditionally retrieves the artifacts from a single jobs, the input parameter which must correspond to a numeric workflow_run_id in github actions
+#
+# Conditionally retrieves the artifacts from a single job specified by the input parameter which must correspond to a numeric workflow_run_id in github actions
 # and stores the desired artifacts, contained in a list called "ARTIFACTS", in a subdirectory of TARGET_DIR, equal to the workflow_run_id/artifact_name.
-# Artifacts are always zips.   The zip file is downloaded and optionally unziped in to the job's sub directory in the TARGET_DIR, and then deleted.
-# Should the <job dir>/<artifact_name> already exist, no downloads are attempted, as the assumption would be this function has already populated the
-# artifacts in to the job dir.
+# Artifacts are always zips.   The zip file is downloaded and optionally unzipped in to the job's sub directory in the TARGET_DIR, and then deleted.
+# Should the subfolder <job dir>/<artifact_name> already exist, no downloads are attempted, as the assumption would be this function has already populated the
+# artifacts in to the <job dir>/<artifact_name> directory either as a zip or as unzipped files.
 #
 # INPUT:
 #  Parameter 1:  A number workflow_run_id
@@ -115,36 +115,37 @@ echoerr Curl Parameters: "${curl_attri[@]}"
 # SIDE EFFECTS:
 #  The ${TARGET_DIR}/${Parameter 1} dir id populated with the unzipped contents of the artifacts from the job.
 #
-getArtifactsFromJob() {
-  jobId=$1;
-  echoerr getting artifacts for jobId "$jobId"
-  artifact_info="$(curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${jobId}/artifacts"  2>/dev/null)"
+function get_artifacts_from_workflow() {
+  workflow_run_id=$1;
+  echoerr getting artifacts for jobId "$workflow_run_id"
+  artifact_info="$(curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${workflow_run_id}/artifacts"  2>/dev/null)"
   for artifact_name in "${ARTIFACTS[@]}"; do
-    if [ ! -d "${TARGET_DIR}/${jobId}/${artifact_name}" ]; then
-      mkdir -p "${TARGET_DIR}/${jobId}/${artifact_name}"
+    if [ ! -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}" ]; then
+      mkdir -p "${TARGET_DIR}/${workflow_run_id}/${artifact_name}"
       download_url_str="$(echo "$artifact_info" | jq '.artifacts[] | select(.name=="'"${artifact_name}"'") .archive_download_url')"
       if [ -n "$download_url_str" ] && [ "$download_url_str" != "null" ]; then
         download_url="${download_url_str//\"/}"
-        curl -L "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${jobId}/${artifact_name}/${artifact_name}.zip" 2>/dev/null
+        curl -L "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip" 2>/dev/null
         if [ "$DECOMPRESS" = "true" ]; then
-          unzip -q "${TARGET_DIR}/${jobId}/${artifact_name}/${artifact_name}.zip" -d "${TARGET_DIR}/${jobId}/${artifact_name}/"
-          rm "${TARGET_DIR}/${jobId}/${artifact_name}/${artifact_name}.zip"
+          unzip -q "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip" -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/"
+          rm "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
         fi
       else
-        echoerr Artifact not found on workflow run: "${jobId}" with contents:
+        echoerr Artifact not found on workflow run: "${workflow_run_id}" with contents:
         echoerr "$artifact_info"
       fi
     fi
   done
   echoerr fetched:
-  echoerr "$(ls -d "${TARGET_DIR}/${jobId}/"*/*)"
+  echoerr "$(ls -d "${TARGET_DIR}/${workflow_run_id}/"*/*)"
 }
 
 #
-# Given a REPO, WORKFLOW and (optional) BRANCH, get HISTORY number of prior run artifacts return output workflow_run_ids, one per line.
+# Given a REPO, WORKFLOW and (optional) BRANCH, get the latest workflow_run_ids as text output of the lenth specified by HISTORY, one per line.
 #
-getWorkflow_Run_Ids() {
-  #Always using temp files for curl output to prevent shell mangling.
+function get_workflow_run_ids() {
+  # Always using temp files for curl output to prevent shell mangling of new lines in user comments on prs.
+  # That data will come back and due to end of line transformatsions break multiline strings in json.
   tmpfile=$(mktemp /tmp/get_reports.XXXXXX)
   PARAMETERS=
   if [ -n "$BRANCH" ]; then
@@ -159,10 +160,10 @@ workflow_run_ids=
 if [ -n "$WORKFLOW_RUN_ID" ]; then
   workflow_run_ids="$WORKFLOW_RUN_ID"
 else
-  workflow_run_ids=$(getWorkflow_Run_Ids)
+  workflow_run_ids=$(get_workflow_run_ids)
 fi
-echoerr Workflow Ids:
+echoerr Workflow Run Ids:
 echoerr "$workflow_run_ids"
 echo "$workflow_run_ids" | while read -r line; do
-  getArtifactsFromJob "$line"
+  get_artifacts_from_workflow "$line"
 done

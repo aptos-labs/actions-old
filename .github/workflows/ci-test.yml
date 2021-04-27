@@ -1,6 +1,6 @@
 # This action creates a dummy artifact, to be tested by the "test-download-artifacts" workflow.
 
-name: 'create-artifacts'
+name: "ci-test"
 
 on:
   pull_request:
@@ -9,7 +9,18 @@ on:
     branches: [master]
 
 jobs:
-  create-artifact:
+  shellcheck_actions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Shellcheck action scritps
+        run: |
+          shellcheck get-artifacts/get_artifacts.sh &&
+          shellcheck changes/get_pr_info.sh
+
+  create-artifact-for-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Create dummy artifacts
