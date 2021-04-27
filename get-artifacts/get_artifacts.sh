@@ -3,7 +3,7 @@ function echoerr() {
   cat <<< "$@" 1>&2;
 }
 
-#Check prerequists.
+# Check prerequisites.
 function check_command() {
     for var in "$@"; do
       if ! (command -v "$var" >/dev/null 2>&1); then
@@ -15,16 +15,16 @@ function check_command() {
 check_command jq curl zip echo getopts
 
 function usage() {
-  echoerr -t token used to communicate with github actions.
-  echoerr -h number of workflow_runs to pull artifacts from.
-  echoerr -a space seperated list of artifact names.
-  echoerr -b optional branch to pull historical artifacts from.
-  echoerr -w workflow file name of of workflow to pull artifact from.
-  echoerr -d target directory where subdirectories for jobs will be created and artifacts will be unzip to.
-  echoerr -i the single job to artifacts from.  Overrides -b,-w, and -h
-  echoerr -z decompress and delete the original downloaded artifacts?
-  echoerr -? this message.
-  echoerr output will written in to the -t target directory.
+  echo -t token used to communicate with github actions.
+  echo -h number of workflow_runs to pull artifacts from.
+  echo -a space seperated list of artifact names.
+  echo -b optional branch to pull historical artifacts from.
+  echo -w workflow file name of of workflow to pull artifact from.
+  echo -d target directory where subdirectories for jobs will be created and artifacts will be unzip to.
+  echo -i the single workflow_run from which to download artifacts.  Overrides -b, -w, and -h
+  echo -z decompress and delete the original downloaded artifacts.
+  echo -? this message.
+  echo output will files will be written to the -t target directory.
 }
 
 TOKEN=
@@ -75,7 +75,7 @@ while getopts 'h:a:r:w:b:i:t:d:z' OPTION; do
 done
 
 if [[ -z "${TARGET_DIR}" ]]; then
-  echoerr target directory must be sepecified.
+  echoerr target directory must be specified.
   usage
   exit 1
 fi
@@ -96,12 +96,16 @@ if [ -n "$TOKEN" ]; then
 fi
 echoerr Curl Parameters: "${curl_attri[@]}"
 
+# Conditionally retrieves the artifacts from a single workflow run specified by the input parameter which must correspond to a numeric
+# workflow_run_id in github actions.  The desired artifacts, named in a list called "ARTIFACTS" are stored in a subdirectory of TARGET_DIR,
+# equal to the TARGET_DIR/${workflow_run_id}/${artifact_name}.
 #
-# Conditionally retrieves the artifacts from a single job specified by the input parameter which must correspond to a numeric workflow_run_id in github actions
-# and stores the desired artifacts, contained in a list called "ARTIFACTS", in a subdirectory of TARGET_DIR, equal to the workflow_run_id/artifact_name.
-# Artifacts are always zips.   The zip file is downloaded and optionally unzipped in to the job's sub directory in the TARGET_DIR, and then deleted.
-# Should the subfolder <job dir>/<artifact_name> already exist, no downloads are attempted, as the assumption would be this function has already populated the
-# artifacts in to the <job dir>/<artifact_name> directory either as a zip or as unzipped files.
+# Since artifacts are always zips, the zip file is downloaded and optionally unzipped in to the artifact's directory
+# (again, TARGET_DIR/${workflow_run_id}/${artifact_name} ), and then deleted.
+#
+# Should the subfolder TARGET_DIR/${workflow_run_id}/${artifact_name} already exist, no downloads are attempted, as the assumption would
+# be this function has already populated the artifacts in to the TARGET_DIR/${workflow_run_id}/${artifact_name} directory either as a zip
+# or as unzipped files.
 #
 # INPUT:
 #  Parameter 1:  A number workflow_run_id
@@ -140,12 +144,11 @@ function get_artifacts_from_workflow() {
   echoerr "$(ls -d "${TARGET_DIR}/${workflow_run_id}/"*/*)"
 }
 
-#
 # Given a REPO, WORKFLOW and (optional) BRANCH, get the latest workflow_run_ids as text output of the lenth specified by HISTORY, one per line.
 #
 function get_workflow_run_ids() {
   # Always using temp files for curl output to prevent shell mangling of new lines in user comments on prs.
-  # That data will come back and due to end of line transformatsions break multiline strings in json.
+  # That data will come back in this request and due to end of line transformatsions break multiline strings in json parsing via jq.
   tmpfile=$(mktemp /tmp/get_reports.XXXXXX)
   PARAMETERS=
   if [ -n "$BRANCH" ]; then
