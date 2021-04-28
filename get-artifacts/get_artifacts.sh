@@ -92,9 +92,9 @@ if [[ -z "${WORKFLOW_RUN_ID}" ]]; then
   fi
 fi
 
-curl_attri=("--retry" "3")
-curl_attri+=("--silent")
-curl_attri+=("--show-error")
+curl_attri=('--retry' '3')
+curl_attri+=('--silent')
+curl_attri+=('--show-error')
 curl_attri+=('-H' 'Accept: application/vnd.github.v3+json')
 if [ -n "$TOKEN" ]; then
   curl_attri+=('-H' "authorization: Bearer ${TOKEN}")
@@ -113,20 +113,20 @@ echoerr Curl Parameters: "${curl_attri[@]}"
 # or as unzipped files.
 #
 # INPUT:
-#  Parameter 1:  A number workflow_run_id
+#  Parameter 1:  A number, workflow_run_id
 #
 # ENVIRONMENT:
-#  TARGET_DIR: A root dir for creation of sub directories for each job
-#  ARTIFACTS: A bash array of artifact names to download from github artifacts workflows for this job.
-#  REPO: Github slug corresponding to a repository
-#  UNZIP: unzip and delete the downloaded artifact?
+#  TARGET_DIR: A root dir for creation of sub directories for each workflow.
+#  ARTIFACTS: A bash array of artifact names to download from github workflows.
+#  REPO: Github slug corresponding to a repository.
+#  UNZIP: unzip and delete the downloaded artifact.
 #
 # SIDE EFFECTS:
 #  The ${TARGET_DIR}/${Parameter 1} dir id populated with the unzipped contents of the artifacts from the job.
 #
 function get_artifacts_from_workflow() {
   workflow_run_id=$1;
-  echoerr getting artifacts for jobId "$workflow_run_id"
+  echoerr getting artifacts for workflow_run_id "$workflow_run_id"
   artifact_info="$( curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${workflow_run_id}/artifacts" )"
   for artifact_name in "${ARTIFACTS[@]}"; do
     if [ ! -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}" ]; then
