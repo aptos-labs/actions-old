@@ -1,0 +1,10 @@
+{
+"name":"GitHub Actions",
+"type":"github",
+"reportName":"Allure Report with history",
+"url":"${GITHUB_PAGES_WEBSITE_URL}",
+"reportUrl":"${GITHUB_PAGES_WEBSITE_URL}/${INPUT_GITHUB_RUN_NUM}/",
+"buildUrl":"https://github.com/${INPUT_GITHUB_REPO}/actions/runs/${INPUT_GITHUB_RUN_ID}",
+"buildName":"GitHub Actions Run #${INPUT_GITHUB_RUN_ID}",
+"buildOrder":"${INPUT_GITHUB_RUN_NUM}"
+}
