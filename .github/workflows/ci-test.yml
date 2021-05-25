@@ -44,5 +44,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: Install needed tools.
+        run: sudo apt-get install xsltproc tidy -y
       - name: Test xml transformer.
-        run: process-test-results/results-transformer/test/test.sh
+        run: cd process-test-results/results-transformer/test/; ./test.sh
