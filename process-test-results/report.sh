@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+#  Please keep this file free from any diem specific code, or unit test transformation.
+#  diem-report.sh is where that code may exist.
+#
 
 # fast fail.
 set -eo pipefail
@@ -16,7 +20,10 @@ function check_command() {
     fi
   done
 }
-check_command allure xsltproc echo getopts tail echo getopts
+check_command allure echo getopts tail dirname pwd
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo SCRIPT_DIR: "$SCRIPT_DIR"
 
 HISTORY_EXTRA_REPORTS_NUMBER=19
 
@@ -32,6 +39,17 @@ function usage() {
   echo -i if set, overrides typical historic artifact downloading, and lets you run a single report on downloaded artifacts.
   echo -? this message.
   echo output will files will be written to the -t target directory.
+  echo
+  echo This script support three functions users may choose to supply, but does not require them.
+  echo
+  echo rcp_from and rcp_to, these copy files to and from a remote store.  They must support two inputs.
+  echo Input one: a sub path that must be mirrored locally or remotely.
+  echo Input two: the local path containing the subpath.
+  echo For instance: rcp_to local/dir/path/to/mirror/with/files/ /home/dir/ would expect to find files here to copy:
+  echo /home/dir/local/dir/path/to/mirror/with/files/
+  echo
+  echo transform_junit_xml supports one input, and expects any preprocessing to a junit xml result file to occur to that file in place.
+  echo the target file may be delete/moved/recreated/etc.
 }
 
 #Github access token
@@ -104,9 +122,6 @@ ARTIFACT_FILE_PATH="${REPOSITORY}/${BRANCH}/${WORKFLOW_FILE}/"
 ARTIFACTS_DIR="${REPORT_ROOT}${ARTIFACT_FILE_PATH}"
 mkdir -p "$ARTIFACTS_DIR"
 
-# Assumed location where the shell file was run from, used to look up get_artifacts shell script.
-TOOLS_BASE="./"
-
 # Number of prior historical runs to grab or build, so that those pushed contain fully populated historical graphs.
 FETCH_COUNT=$((HISTORY_COUNT + HISTORY_EXTRA_REPORTS_NUMBER))
 
@@ -115,7 +130,7 @@ FETCH_COUNT=$((HISTORY_COUNT + HISTORY_EXTRA_REPORTS_NUMBER))
 # Use get_artifact.sh to pull all xml artifacts that were successful from target workflow/branch/repo and unzip them.
 # This is our source of truth
 # Remote historic reports copied in will be based of the information found here.
-"${TOOLS_BASE}"get_artifacts/get_artifacts.sh -d "${ARTIFACTS_DIR}" -a "$ARTIFACTS" -w "$WORKFLOW_FILE" -b "$BRANCH" -r "$REPOSITORY" -h "$FETCH_COUNT" -t "$TOKEN" -i "$WORKFLOW_RUN_ID" -z -s
+"${SCRIPT_DIR}"/../get-artifacts/get_artifacts.sh -d "${ARTIFACTS_DIR}" -a "$ARTIFACTS" -w "$WORKFLOW_FILE" -b "$BRANCH" -r "$REPOSITORY" -h "$FETCH_COUNT" -t "$TOKEN" -i "$WORKFLOW_RUN_ID" -z -s
 
 
 # The pushlist, determines which report directories get pushed back to aws, if greater than 1, you probably may want to set RECOMPUTE to true.
@@ -124,22 +139,29 @@ PUSH_LIST=$(find "$ARTIFACTS_DIR" -maxdepth 1 -mindepth 1 -type d | sed 's/.*\//
 # Notice the process list is greater than the asked for history count, since each report contains up to HISTORY_EXTRA_REPORTS_NUMBER prior historical runs.
 PROCESS_LIST=$(find "$ARTIFACTS_DIR" -maxdepth 1 -mindepth 1 -type d | sed 's/.*\///' | sort -n | tail -${FETCH_COUNT} )
 
-echo Process list "${PROCESS_LIST}"
+echo Process list:
+echo "${PROCESS_LIST}"
 
 
 # STEP 2:  Download existing reports, if any, from the remote copy source.
 # Get the sub dirs (one per job number) and sort them in numeric order.
 set +x
 
-#Uncomment when can list files in s3.
-#for dir in $PROCESS_LIST; do
-#  echo Fetching remote reports for: "$dir"
-#  rcp_from "$ARTIFACT_FILE_PATH""$dir" "$REPORT_ROOT"
-#done
+# If a supplied shell function exists called `rcp_from` it will be called with the two parameters.
+# The name of the remote path to look for to attempt to download, and the local path leading to
+# a mirrored local location of that remote path.
+if [ "$( type rcp_from 2>&1 > /dev/null ; echo $? )" = "0" ]; then
+  for dir in $PROCESS_LIST; do
+    echo Fetching remote reports for: "$dir"
+    rcp_from "$ARTIFACT_FILE_PATH""$dir" "$REPORT_ROOT"
+  done
+fi
 
 # If anything in this script is _ever_ used to modify the original test reports in 3rd party storage access by rcp_from and rcp_to
 # we can rerun step 1 here to overwrite the modifid artifacts.
 
+# The reports we will push to remote storage via rcp_to.
+REPORTS_TO_PUBLISH=()
 
 # Get the sub dirs (one per job number) and sort them in numeric order -- we will get requested history + HISTORY_EXTRA_REPORTS_NUMBER,
 # So that if we need to recreate older reports they will have the needed history, we will never push back these older
@@ -149,36 +171,23 @@ for dir in $PROCESS_LIST; do
 
   #STEP 3:  Generate, or regerate reports, if requested.
 
-  # Make working dir to hold xslt and regex junit.xml
-  work_dir="${ARTIFACTS_DIR}/${dir}"/transformed_junitxml/
+  # Make working dir to hold possible transformation of xml files.
+  work_dir="${ARTIFACTS_DIR}${dir}"/transformed_junitxml/
 
   if [ ! -d "$work_dir" ] || [ "$RECOMPUTE" == "true" ]; then
     rm -rf "${work_dir}"
     mkdir -p "${work_dir}"
     # copy all xml files from subdir (unzipped artifacts) to working dirs, some jobs will not produce artifacts.
-    cp "${ARTIFACTS_DIR}/${dir}"/artifacts/*/*.xml "${work_dir}" 2>/dev/null || true
-    # gather and transform the unit test xml files with xslt, and sed to remove busted characters.
-    for xmlfile in "${work_dir}"*.xml; do
-      if [ -f "${xmlfile}" ]; then
+    cp "${ARTIFACTS_DIR}${dir}"/artifacts/*/*.xml "${work_dir}" 2>/dev/null || true
 
-        mv "${xmlfile}" "${xmlfile}_old"
-        # use sed to add cdata elements wrapping inner text in <system-out></system-out> and <system-err></system-err> nodes
-        # if files contains at least one sequence of "<system-out>"", but no sequence of ""<![CDATA["
-        # This is fragile.   Should fix nextest to put all logs in text files like standard junit.
-        if [ "$(grep -c '<system-out>' "${xmlfile}_old")" -ne 0 ] && [ "$(grep -c '<!\[CDATA\[' "${xmlfile}_old")" == 0 ]; then
-          sed -i '.bk1' 's/<system-out>/<system-out><![CDATA[/g' "${xmlfile}_old"
-          sed -i '.bk2' 's/<\/system-out>/]]><\/system-out>/g' "${xmlfile}_old"
-          sed -i '.bk3' 's/<system-err>/<system-err><![CDATA[/g' "${xmlfile}_old"
-          sed -i '.bk4' 's/<\/system-err>/]]><\/system-err>/g' "${xmlfile}_old"
+    # gather and transform the unit test xml files with a shell function of transform_junit_xml, should it exist.
+    if [ "$( type transform_junit_xml 2>&1 > /dev/null ; echo $? )" = "0" ]; then
+      for xmlfile in "${work_dir}"*.xml; do
+        if [ -f "${xmlfile}" ]; then
+          transform_junit_xml "${xmlfile}"
         fi
-        # remove console coloring characters
-        sed -i '.bk5' -E "s/"$'\E'"\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" "${xmlfile}_old"
-
-        #use xslt to wrap testsuites around individual tests (and move the timing appropriately), ignore any problems tidy has reports with character sets, setc.
-        xsltproc "${TOOLS_BASE}"/results-transformer/transform.xml "${xmlfile}_old" | (tidy -xml -i -q -w 1000 - || true) >> "${xmlfile}"
-        rm "${xmlfile}_old"
-      fi
-    done
+      done
+    fi
 
     # STEP 4: Set up extra allure 2 input for report generation.
     # environment properties to display in a report.
@@ -193,11 +202,11 @@ for dir in $PROCESS_LIST; do
     # Make executor.json, determines links between reports, to original job
     {
       echo '{"name":"Test History: '"${REPOSITORY}/${BRANCH}/${WORKFLOW_FILE}"'","type":"github","reportName":"Test History: '"${REPOSITORY}/${BRANCH}/${WORKFLOW_FILE}"'",';
-      echo "\"url\":\"./${WORKFLOW_ID}/report\",";
-      echo "\"reportUrl\":\"../../${WORKFLOW_ID}/report\",";
+      echo "\"url\":\"./${WORKFLOW_ID}/report/index.html\",";
+      echo "\"reportUrl\":\"../../${WORKFLOW_ID}/report/index.html\",";
       echo "\"buildUrl\":\"https://github.com/${REPOSITORY}/actions/runs/${WORKFLOW_ID}\",";
       echo "\"buildName\":\"GitHub Actions Run #${WORKFLOW_ID}\",\"buildOrder\":\"${INPUT_GITHUB_RUN_NUM}\"}";
-    } >> "$work_dir"/executor.json
+    } >> "$work_dir"executor.json
 
     # Copy allure configuration in to place.
     # Allure.yml determines which allure reports to generate (aka, what plugins to run.)
@@ -207,10 +216,10 @@ for dir in $PROCESS_LIST; do
     cp "${ALLURE_CONFIGURATION}"/categories.json "${work_dir}"
   fi
 
-
   # Step 5:  Generate report if missing, or asked to recompute.
-  report_dir="${ARTIFACTS_DIR}/${dir}"/report/
-  if [ ! -d "$report_dir" ] || [ "$RECOMPUTE" == "true" ]; then
+  report_dir="${ARTIFACTS_DIR}${dir}"/report/
+  if [ ! -d "$report_dir" ] || [ "$RECOMPUTE" == "true" ] ; then
+    REPORTS_TO_PUBLISH+=("$dir")
     rm -rf "${report_dir}"
     mkdir -p "${report_dir}"
 
@@ -228,14 +237,7 @@ for dir in $PROCESS_LIST; do
   fi
 done
 
-# STEP 6:  Push all regenerated reports existing reports, if any, from the remote copy source.
-# Get the sub dirs (one per job number) and sort them in numeric order.
-#for dir in $PUSH_LIST; do
-#  echo Fetching remote reports for: "$dir"
-#  rcp_to "$ARTIFACT_FILE_PATH""$dir" "$REPORT_ROOT"
-#done
-
-#STEP 7:  Create a redirecting index.html file pointing to the latest report to be generated.
+#STEP 6:  Create a redirecting index.html file pointing to the latest report.
 LATEST=$(find "$ARTIFACTS_DIR" -maxdepth 1 -mindepth 1 -type d | sed 's/.*\///' | sort -n | tail -1 )
 {
   echo "<!DOCTYPE html>"
@@ -243,5 +245,21 @@ LATEST=$(find "$ARTIFACTS_DIR" -maxdepth 1 -mindepth 1 -type d | sed 's/.*\///' 
   echo "<meta http-equiv=\"refresh\" content=\"0; URL=./${LATEST}/report/index.html\">"
   echo "<meta http-equiv=\"Pragma\" content=\"no-cache\">"
   echo "<meta http-equiv=\"Expires\" content=\"0\">"
-}  > "${ARTIFACTS_DIR}"/index.html
-rcp_to "$ARTIFACT_FILE_PATH"/index.html "$REPORT_ROOT"
+}  > "${ARTIFACTS_DIR}"index.html
+
+# If a supplied shell function exists called `rcp_from` it will be called with the two parameters.
+# The name of the remote path to look for to push the local files to, and the local path leading to
+# a mirrored local location of that remote path.
+if [ "$( type rcp_to 2>&1 > /dev/null ; echo $? )" = "0" ]; then
+  # STEP 7:  Push all generated reports, if any, from the remote copy source.
+  # Get the sub dirs (one per job number) and sort them in numeric order.
+  for dir in $PUSH_LIST; do
+    if [[ $(echo "${REPORTS_TO_PUBLISH[@]}" | grep -q "$dir"; echo $?) == 0 ]]; then
+      echo Pushing report to remote storage: "$dir"
+      rcp_to "$ARTIFACT_FILE_PATH""$dir" "$REPORT_ROOT"
+    else
+      echo Not pushing report to remote storage since it was not regenerated: "$dir"
+    fi
+  done
+  rcp_to "$ARTIFACT_FILE_PATH"index.html "$REPORT_ROOT"
+fi
