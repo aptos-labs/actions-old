@@ -18,7 +18,9 @@ jobs:
       - name: Shellcheck action scritps
         run: |
           shellcheck get-artifacts/get_artifacts.sh &&
-          shellcheck changes/get_pr_info.sh
+          shellcheck changes/get_pr_info.sh &&
+          shellcheck process-test-results/diem-report.sh &&
+          shellcheck process-test-results/report.sh
 
   create-artifact-for-tests:
     runs-on: ubuntu-latest
@@ -35,3 +37,12 @@ jobs:
         with:
           name: test.not-download
           path: test-file.not-download
+
+  shelltests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Test xml transformer.
+        run: process-test-results/results-transformer/test/test.sh
