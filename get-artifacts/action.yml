@@ -12,7 +12,7 @@ inputs:
     description: The root folder to pull all artifact files in to (under a subfolder named for the workflow_run_id).
     required: false
   artifacts:
-    description: Space seperated names of artifacts to download.
+    description: Space seperated names of artifacts to download from each job.
     required: true
   repo:
     default: ${{ github.repository }}
@@ -31,6 +31,10 @@ inputs:
   workflow_run_id:
     description: A specific workflow execution to pull artifacts from.
     required: false
+  only_successful:
+    default: "false"
+    description: Should only workflow runs that have succeeded be sources of downloaded artifacts?
+    required: false
   decompress:
     default: "true"
     description: should artifacts be unzipped and original zips deleted
@@ -42,6 +46,9 @@ runs:
         extra_param=()
         if [ "$DECOMPRESS" = "true" ]; then
           extra_param+=("-z")
+        fi
+        if [ "$SUCCESS_ONLY" = "true" ]; then
+          extra_param+=("-s")
         fi
         ${GITHUB_ACTION_PATH}/get_artifacts.sh -d "$TARGET_DIR" -a "$ARTIFACTS" -w "$WORKFILE" -b "$BRANCH" -r "$REPOSITORY" -h "$HISTORY" -i "$WORKFLOW_RUN_ID" -t "${GITHUB_TOKEN}" "${extra_param[@]}"
       shell: bash
@@ -55,3 +62,4 @@ runs:
         HISTORY: ${{ inputs.history }}
         WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
         DECOMPRESS: ${{ inputs.decompress }}
+        SUCCESS_ONLY: ${{ only_successful }}

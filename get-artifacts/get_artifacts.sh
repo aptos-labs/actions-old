@@ -24,8 +24,9 @@ function usage() {
   echo -a space seperated list of artifact names.
   echo -b optional branch to pull historical artifacts from.
   echo -w workflow file name of of workflow to pull artifact from.
+  echo -s successful workflows only
   echo -d target directory where subdirectories for jobs will be created and artifacts will be unzip to.
-  echo -i the single workflow_run from which to download artifacts.  Overrides -b, -w, and -h
+  echo -i the single workflow_run from which to download artifacts.  Overrides -h.
   echo -z decompress and delete the original downloaded artifacts.
   echo -? this message.
   echo output will files will be written to the -t target directory.
@@ -39,10 +40,11 @@ WORKFLOW=
 BRANCH=
 TARGET_DIR=
 WORKFLOW_RUN_ID=
+SUCCESSFUL_WORKFLOWS_ONLY=
 DECOMPRESS=false
 
 
-while getopts 'h:a:r:w:b:i:t:d:z' OPTION; do
+while getopts 'h:a:r:w:b:i:t:d:zs' OPTION; do
   case "$OPTION" in
     h)
       HISTORY="$OPTARG"
@@ -67,6 +69,9 @@ while getopts 'h:a:r:w:b:i:t:d:z' OPTION; do
       ;;
     z)
       DECOMPRESS="true"
+      ;;
+    s)
+      SUCCESSFUL_WORKFLOWS_ONLY="true"
       ;;
     t)
       TOKEN="$OPTARG"
@@ -129,24 +134,25 @@ function get_artifacts_from_workflow() {
   echoerr getting artifacts for workflow_run_id "$workflow_run_id"
   artifact_info="$( curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/runs/${workflow_run_id}/artifacts" )"
   for artifact_name in "${ARTIFACTS[@]}"; do
-    if [ ! -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}" ]; then
-      mkdir -p "${TARGET_DIR}/${workflow_run_id}/${artifact_name}"
+    if [ ! -d "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}" ]; then
+      mkdir -p "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}"
       download_url_str="$(echo "$artifact_info" | jq '.artifacts[] | select(.name=="'"${artifact_name}"'") .archive_download_url')"
       if [ -n "$download_url_str" ] && [ "$download_url_str" != "null" ]; then
         download_url="${download_url_str//\"/}"
-        curl -L "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
+        curl -L "${curl_attri[@]}" "$download_url" -o "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}/${artifact_name}.zip"
         if [ "$DECOMPRESS" = "true" ]; then
-          unzip -q "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip" -d "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/"
-          rm "${TARGET_DIR}/${workflow_run_id}/${artifact_name}/${artifact_name}.zip"
+          unzip -q "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}/${artifact_name}.zip" -d "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}/"
+          rm "${TARGET_DIR}/${workflow_run_id}/artifacts/${artifact_name}/${artifact_name}.zip"
         fi
       else
-        echoerr Artifact not found on workflow run: "${workflow_run_id}" with contents:
-        echoerr "$artifact_info"
+        echoerr Artifact "${artifact_name}" not found on workflow run: "${workflow_run_id}"
+        # Uncomment to see the returned artifact message.
+        # echoerr "$artifact_info"
       fi
     fi
   done
   echoerr fetched:
-  echoerr "$(ls -d "${TARGET_DIR}/${workflow_run_id}/"*/*)"
+  echoerr "$(ls -d "${TARGET_DIR}/${workflow_run_id}/artifacts/"/*/* 2> /dev/null )"
 }
 
 # Given a REPO, WORKFLOW and (optional) BRANCH, get the latest workflow_run_ids as text output of the lenth specified by HISTORY, one per line.
@@ -159,7 +165,12 @@ function get_workflow_run_ids() {
   if [ -n "$BRANCH" ]; then
     PARAMETERS="branch=${BRANCH}&"
   fi
-  curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?${PARAMETERS}status=completed&per_page=${HISTORY}" > "$tmpfile"
+  if [ -n "$SUCCESSFUL_WORKFLOWS_ONLY" ]; then
+    PARAMETERS="${PARAMETERS}status=success&"
+  else
+     PARAMETERS="${PARAMETERS}status==completed&"
+  fi
+  curl "${curl_attri[@]}" "https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?${PARAMETERS}&per_page=${HISTORY}" > "$tmpfile"
   workflow_ids="$(jq '.workflow_runs[].id' < "$tmpfile")"
   echo "${workflow_ids}"
   rm "$tmpfile"

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- In the future may need to fix the testsuite results to have proper data, but as of now it's irrelevant to allure2,
+     since Allure2 does it's own calculations/counts -->
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
+    <xsl:template match="testcase">
+      <testsuite name="{../@name}" tests="1" disabled="0" errors="0" failures="0" timestamp="{@timestamp}" time="{@time}">
+          <testcase name="{@name}" classname="{@classname}" time="{@time}">
+             <xsl:copy-of select="node()"/>
+          </testcase>
+      </testsuite>
+    </xsl:template>
+    <xsl:template match="testsuites">
+        <testsuites>
+            <xsl:apply-templates select="node()|@*"/>
+        </testsuites>
+    </xsl:template>
+</xsl:stylesheet>
