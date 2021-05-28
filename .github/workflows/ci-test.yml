@@ -9,7 +9,7 @@ on:
     branches: [master]
 
 jobs:
-  shellcheck_actions:
+  shellcheck_everything:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,10 +17,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Shellcheck action scritps
         run: |
-          shellcheck get-artifacts/get_artifacts.sh &&
-          shellcheck changes/get_pr_info.sh &&
-          shellcheck process-test-results/diem-report.sh &&
-          shellcheck process-test-results/report.sh
+          shellcheck $(find . -type f -name '*.sh')
 
   create-artifact-for-tests:
     runs-on: ubuntu-latest
