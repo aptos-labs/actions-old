@@ -1,7 +1,7 @@
 #!/bin/bash
 pass=0
 for dir in */; do
-  echo Running test: $dir
+  echo Running test: "$dir"
   diff "${dir}expected_output.xml" <(xsltproc ../transform.xml "${dir}input.xml" | tidy -xml -i -q -w 1000 -)
   result=$?
   if [ ${result} == 0 ]; then

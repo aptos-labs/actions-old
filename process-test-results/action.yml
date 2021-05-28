@@ -24,7 +24,7 @@ inputs:
     required: false
   recreate:
     description: should existing reports be rebuilt and republished.
-    default: false
+    default: "false"
     required: false
   allure_configuration:
     description: Configuration folder for allure.
@@ -41,14 +41,14 @@ runs:
         workdir={{ github.workspace }}/work/
         test_artifacts=${workdir}test_results/
         cd ${GITHUB_ACTION_PATH}/
-        ./diem-report.sh -d "${test_artifacts}" -a "$ARTIFACTS" -w "$WORKFILE" -b "$BRANCH" -r "$REPOSITORY" -h "$HISTORY" -t "${GITHUB_TOKEN}" -c "${ALLURE_CONFIG}" "${extra_param[@]}"
+        ./diem-report.sh -d "${test_artifacts}" -a "$ARTIFACTS" -w "$WORKFLOW_FILE" -b "$BRANCH" -r "$REPOSITORY" -h "$HISTORY" -t "${GITHUB_TOKEN}" -c "${ALLURE_CONFIG}" "${extra_param[@]}"
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         TARGET_DIR: ${{ inputs.target_dir }}
         ARTIFACTS: ${{ inputs.artifacts }}
         REPOSITORY: ${{ inputs.repo }}
-        WORKFILE: ${{ inputs.workflow_file }}
+        WORKFLOW_FILE: ${{ inputs.workflow_file }}
         BRANCH: ${{ inputs.branch }}
         HISTORY: ${{ inputs.history }}
         WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
