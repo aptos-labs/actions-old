@@ -132,13 +132,17 @@ function transform_junit_xml() {
   # if files contains at least one sequence of "<system-out>"", but no sequence of ""<![CDATA["
   # This is fragile.   Should fix nextest to put all logs in text files like standard junit.
   if [ "$(grep -c '<system-out>' "${xmlfile}_old")" -ne 0 ] && [ "$(grep -c '<!\[CDATA\[' "${xmlfile}_old")" == 0 ]; then
-    sed -i '.bk1' 's/<system-out>/<system-out><![CDATA[/g' "${xmlfile}_old"
-    sed -i '.bk2' 's/<\/system-out>/]]><\/system-out>/g' "${xmlfile}_old"
-    sed -i '.bk3' 's/<system-err>/<system-err><![CDATA[/g' "${xmlfile}_old"
-    sed -i '.bk4' 's/<\/system-err>/]]><\/system-err>/g' "${xmlfile}_old"
+    sed -i.bk1 's/<system-out>/<system-out><![CDATA[/g' "${xmlfile}_old"
+    sed -i.bk2 's/<\/system-out>/]]><\/system-out>/g' "${xmlfile}_old"
+    sed -i.bk3 's/<system-err>/<system-err><![CDATA[/g' "${xmlfile}_old"
+    sed -i.bk4 's/<\/system-err>/]]><\/system-err>/g' "${xmlfile}_old"
   fi
   # remove console coloring characters
-  sed -i '.bk5' -E "s/"$'\E'"\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" "${xmlfile}_old"
+  if [[ $(uname -s) =~ "Linux" ]]; then
+     sed -i.bk5 -E 's/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g' "${xmlfile}_old"
+  elif [[ $(uname -s) =~ "Darwin" ]]; then
+     sed -i.bk5 -E "s/"$'\E'"\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" "${xmlfile}_old"
+  fi
 
   #use xslt to wrap testsuites around individual tests (and move the timing appropriately), ignore any problems tidy has reports with character sets, setc.
   xsltproc "${SCRIPT_DIR}"/results-transformer/transform.xml "${xmlfile}_old" | (tidy -xml -i -q -w 1000 - || true) >> "${xmlfile}"

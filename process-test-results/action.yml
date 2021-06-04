@@ -28,7 +28,7 @@ inputs:
     required: false
   allure_configuration:
     description: Configuration folder for allure.
-    default: ${{ github.action_path }}/allure-configuration/
+    default: ./allure-configuration
     required: false
 runs:
   using: "composite"
