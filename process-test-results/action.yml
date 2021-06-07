@@ -28,7 +28,7 @@ inputs:
     required: false
   allure_configuration:
     description: Configuration folder for allure.
-    default: ${{ env.github.action_path }}/allure-configuration/
+    default: ./allure-configuration
     required: false
 runs:
   using: "composite"
@@ -38,7 +38,7 @@ runs:
         if [ "$RECREATE" = "true" ]; then
           extra_param+=("-m")
         fi
-        workdir={{ github.workspace }}/work/
+        workdir=${GITHUB_ACTION_PATH}/work/
         test_artifacts=${workdir}test_results/
         cd ${GITHUB_ACTION_PATH}/
         ./diem-report.sh -d "${test_artifacts}" -a "$ARTIFACTS" -w "$WORKFLOW_FILE" -b "$BRANCH" -r "$REPOSITORY" -h "$HISTORY" -t "${GITHUB_TOKEN}" -c "${ALLURE_CONFIG}" "${extra_param[@]}"

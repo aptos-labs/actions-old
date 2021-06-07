@@ -16,7 +16,7 @@ function check_command() {
     fi
   done
 }
-check_command jq curl zip echo getopts
+check_command jq curl unzip echo getopts
 
 function usage() {
   echo -t token used to communicate with github actions.
