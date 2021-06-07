@@ -62,4 +62,4 @@ runs:
         HISTORY: ${{ inputs.history }}
         WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
         DECOMPRESS: ${{ inputs.decompress }}
-        SUCCESS_ONLY: ${{ only_successful }}
+        SUCCESS_ONLY: ${{ inputs.only_successful }}
