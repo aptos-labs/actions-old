@@ -10,27 +10,6 @@ on:
       - completed
 
 jobs:
-  test-download-artifacts:
-    runs-on: ubuntu-latest
-    name: test download-artifacts
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download and extract artifacts
-        uses: ./download-artifacts
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-          pattern: '^.*\.download$'
-          extract: true
-      - name: Test that "test.download" got downloaded
-        run: |
-          [[ -f artifacts/test.download.zip ]]
-          cat artifacts/test.download/test-file.download
-      - name: Test that "test.not-download" did not get downloaded
-        run: |
-          [[ ! -f artifacts/test.not-download.zip ]]
-          [[ ! -f artifacts/test.not-download/test-file.not-download ]]
-
   test-get-artifacts-single:
     runs-on: ubuntu-latest
     name: test get-artifacts from a single workflow run
