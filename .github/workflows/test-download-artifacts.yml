@@ -47,11 +47,11 @@ jobs:
           decompress: true
       - name: Test that "test.download" got downloaded
         run: |
-          [[ -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
+          [[ -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
           [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) = 1 ]
       - name: Test that "test.not-download" did not get downloaded
         run: |
-          [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
+          [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
 
   test-get-artifacts-multiple:
     runs-on: ubuntu-latest
@@ -70,6 +70,6 @@ jobs:
           history: 10
       - name: Test that multiple workflow run's files got downloaded
         run: |
-          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.download/test-file.download ]]
-          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/test.not-download/test-file.not-download ]]
+          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
+          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
           [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) -gt 1 ]
