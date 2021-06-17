@@ -120,7 +120,7 @@ $DEBUG && echoerr BASE_GITHASH="$BASE_GITHASH"
 #Bor's target branch -- use bors commit message as source of truth.
 if [[ "$BORS" == true ]] &&  [[ "$BRANCH" == "auto" || "$BRANCH" == "canary" ]] ; then
   commit_message=$(git log -1 --pretty=%B)
-  PR_NUMBER=$(echo "${commit_message}" | tail -1 | sed 's/Closes: #//')
+  PR_NUMBER=$(echo "${commit_message}" | grep 'Closes: #' | tail -1 | sed 's/Closes: #//')
 else
   #Let's see if this is a pr.
   #If github actions
