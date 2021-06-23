@@ -83,7 +83,7 @@
   </testsuite>
   <testsuite name="diem-logger::logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.644+00:00" time="0.020">
     <testcase name="fifty_fifty" classname="diem-logger::logger" time="0.020">
-      <rerunFailure type="test failure" message="failure">System Out: running 1 test test fifty_fifty ... FAILED failures: failures: fifty_fifty test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s System Error: thread 'fifty_fifty' panicked at 'assertion failed: `(left == right)` left: `1`, right: `0`', common/logger/tests/logger.rs:46:5 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</rerunFailure>
+      <rerunFailure type="test failure" message="failure">System Out: -------------------------------------------------------------------------------------------------------- running 1 test test fifty_fifty ... FAILED failures: failures: fifty_fifty test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s System Error: -------------------------------------------------------------------------------------------------------- thread 'fifty_fifty' panicked at 'assertion failed: `(left == right)` left: `1`, right: `0`', common/logger/tests/logger.rs:46:5 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</rerunFailure>
     </testcase>
   </testsuite>
   <testsuite name="diem-logger::logger_custom_format" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.589+00:00" time="0.058">

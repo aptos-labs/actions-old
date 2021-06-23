@@ -145,7 +145,7 @@ function transform_junit_xml() {
   fi
 
   #use xslt to wrap testsuites around individual tests (and move the timing appropriately), ignore any problems tidy has reports with character sets, setc.
-  xsltproc "${SCRIPT_DIR}"/results-transformer/transform.xml "${xmlfile}_old" | (tidy -xml -i -q -w 1000 - || true) >> "${xmlfile}"
+  xsltproc "${SCRIPT_DIR}"/results-transformer/transform.xml "${xmlfile}_old" >> "${xmlfile}"
   rm "${xmlfile}_old".bk*
   rm "${xmlfile}_old"
 }
