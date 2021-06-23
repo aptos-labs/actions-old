@@ -4,16 +4,148 @@
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
+
+    <!-- every testcase will have it's own, wrapping testsuite put around it -->
+    <xsl:template match="testsuites">
+      <testsuites>
+        <xsl:apply-templates select="testsuite/testcase"/>
+      </testsuites>
+    </xsl:template>
+
+    <!-- construct the testcase and wrapping testsuite for each testcase -->
     <xsl:template match="testcase">
       <testsuite name="{../@name}" tests="1" disabled="0" errors="0" failures="0" timestamp="{@timestamp}" time="{@time}">
-          <testcase name="{@name}" classname="{@classname}" time="{@time}">
-             <xsl:copy-of select="node()"/>
-          </testcase>
+        <testcase name="{@name}" classname="{@classname}" time="{@time}">
+          <xsl:apply-templates select="node()"/>
+        </testcase>
       </testsuite>
     </xsl:template>
-    <xsl:template match="testsuites">
-        <testsuites>
-            <xsl:apply-templates select="node()|@*"/>
-        </testsuites>
+
+    <!-- turn each flakyFailure in to a rerunFailure and turn system-out/err in to a text node -->
+    <xsl:template match="flakyFailure">
+      <rerunFailure>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'failure'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-err/text()"/>
+      </rerunFailure>
     </xsl:template>
+
+    <!-- turn each flakyFailure in to a rerunFailure and turn system-out/err in to a text node -->
+    <xsl:template match="rerunFailure">
+      <rerunFailure>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'failure'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-err/text()"/>
+      </rerunFailure>
+    </xsl:template>
+
+    <!-- turn each flakyError in to a rerunError and turn system-out/err in to a text node -->
+    <xsl:template match="flakyError">
+      <rerunError>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'error'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-err/text()"/>
+      </rerunError>
+    </xsl:template>
+
+    <!-- collaps system-out/system-err nodes in to a text node for rerurnError -->
+    <xsl:template match="rerunError">
+      <rerunError>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'error'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="system-err/text()"/>
+      </rerunError>
+    </xsl:template>
+
+    <!-- collaps system-out/system-err nodes in to a text node for error -->
+    <xsl:template match="error">
+      <error>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'error'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="../system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="../system-err/text()"/>
+      </error>
+    </xsl:template>
+
+
+    <!-- collaps system-out/system-err nodes in to a text node for failure -->
+    <xsl:template match="failure">
+      <failure>
+        <xsl:attribute name="type">
+          <xsl:value-of select="@type"/>
+        </xsl:attribute>
+        <xsl:attribute name="message">
+          <xsl:value-of select="'failure'"/>
+        </xsl:attribute>
+System Out:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="../system-out/text()"/>
+
+System Error:
+--------------------------------------------------------------------------------------------------------
+
+        <xsl:value-of select="../system-err/text()"/>
+      </failure>
+    </xsl:template>
+
 </xsl:stylesheet>

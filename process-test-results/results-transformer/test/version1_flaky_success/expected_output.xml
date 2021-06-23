@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="diem-logger::derive" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.060">
+    <testcase name="generic" classname="diem-logger::derive" time="0.060"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::derive" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.067">
+    <testcase name="error_trait_object" classname="diem-logger::derive" time="0.067"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::derive" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.073">
+    <testcase name="lifetime" classname="diem-logger::derive" time="0.073"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::derive" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.080">
+    <testcase name="attrs" classname="diem-logger::derive" time="0.080"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::derive" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.149">
+    <testcase name="simple" classname="diem-logger::derive" time="0.149"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::remote" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.590+00:00" time="0.441">
+    <testcase name="remote_end_to_end" classname="diem-logger::remote" time="0.441"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.067">
+    <testcase name="filter::tests::match_default" classname="diem-logger" time="0.067"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.071">
+    <testcase name="filter::tests::parse_global" classname="diem-logger" time="0.071"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.078">
+    <testcase name="filter::tests::filter_info" classname="diem-logger" time="0.078"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.082">
+    <testcase name="filter::tests::no_match" classname="diem-logger" time="0.082"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.085">
+    <testcase name="filter::tests::match_beginning" classname="diem-logger" time="0.085"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.131">
+    <testcase name="filter::tests::match_full_path" classname="diem-logger" time="0.131"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.131">
+    <testcase name="filter::tests::match_beginning_longest_match" classname="diem-logger" time="0.131"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.507+00:00" time="0.082">
+    <testcase name="filter::tests::parse_string_level" classname="diem-logger" time="0.082"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.150">
+    <testcase name="filter::tests::parse_empty_level" classname="diem-logger" time="0.150"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.500+00:00" time="0.090">
+    <testcase name="filter::tests::parse_invalid_crate" classname="diem-logger" time="0.090"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.150">
+    <testcase name="filter::tests::parse_default" classname="diem-logger" time="0.150"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.150">
+    <testcase name="filter::tests::filter_beginning_longest_match" classname="diem-logger" time="0.150"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.507+00:00" time="0.092">
+    <testcase name="filter::tests::parse_invalid_level" classname="diem-logger" time="0.092"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.511+00:00" time="0.090">
+    <testcase name="filter::tests::parse_valid" classname="diem-logger" time="0.090"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.513+00:00" time="0.126">
+    <testcase name="filter::tests::zero_level" classname="diem-logger" time="0.126"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.518+00:00" time="0.121">
+    <testcase name="sample::tests::always" classname="diem-logger" time="0.121"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.522+00:00" time="0.122">
+    <testcase name="sample::tests::macro_expansion" classname="diem-logger" time="0.122"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.520+00:00" time="0.124">
+    <testcase name="sample::tests::frequency" classname="diem-logger" time="0.124"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.525+00:00" time="0.124">
+    <testcase name="sample::tests::threaded" classname="diem-logger" time="0.124"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.440+00:00" time="0.539">
+    <testcase name="diem_logger::tests::basic" classname="diem-logger" time="0.539"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.570+00:00" time="0.072">
+    <testcase name="verify_end_to_end" classname="diem-logger::logger" time="0.072"></testcase>
+  </testsuite>
+  <testsuite name="diem-logger::logger" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.644+00:00" time="0.020">
+    <testcase name="fifty_fifty" classname="diem-logger::logger" time="0.020">
+      <rerunFailure type="test failure" message="failure">System Out: -------------------------------------------------------------------------------------------------------- running 1 test test fifty_fifty ... FAILED failures: failures: fifty_fifty test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s System Error: -------------------------------------------------------------------------------------------------------- thread 'fifty_fifty' panicked at 'assertion failed: `(left == right)` left: `1`, right: `0`', common/logger/tests/logger.rs:46:5 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace</rerunFailure>
+    </testcase>
+  </testsuite>
+  <testsuite name="diem-logger::logger_custom_format" tests="1" disabled="0" errors="0" failures="0" timestamp="2021-06-18T23:29:25.589+00:00" time="0.058">
+    <testcase name="test_custom_formatter" classname="diem-logger::logger_custom_format" time="0.058"></testcase>
+  </testsuite>
+</testsuites>
