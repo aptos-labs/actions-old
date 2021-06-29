@@ -21,6 +21,8 @@ async function main() {
 
     const client = new github.getOctokit(github_token);
     let gh_repo = process.env.GITHUB_REPOSITORY
+    const owner = gh_repo.split("/")[0];
+    const repo = gh_repo.split("/")[1];
     // find existing issue
     console.log(`Find existing issue with matching title`);
     let existing
@@ -30,9 +32,6 @@ async function main() {
     if (existing_issues) {
       existing = existing_issues.data.items.find(issue => issue.title === title);
     }
-
-    const owner = github.context.payload.repository.owner.login;
-    const repo = github.context.payload.repository.name;
     if (existing) {
       // update in place
       const issue = await client.issues.update({
