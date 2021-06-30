@@ -1,0 +1,30 @@
+<!-- In the future may need to fix the testsuite results to have proper data, but as of now it's irrelevant to allure2,
+     since Allure2 does it's own calculations/counts -->
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="text" omit-xml-declaration="yes" indent="no"/>
+
+    <!-- every testcase will have it's own, wrapping testsuite put around it -->
+    <xsl:template match="testsuites">
+        <xsl:apply-templates select="//testcase[rerunError or rerunFailure]"/>
+    </xsl:template>
+
+    <!-- construct the testcase and wrapping testsuite for each testcase -->
+    <xsl:template match="testcase">
+:::Start of a newly transformed test case flake:::
+<xsl:value-of select="@classname"/>::<xsl:value-of select="@name"/>
+        <!--xsl:value-of select="flakyFailure/text()"/-->
+        <xsl:apply-templates select="node()"/>
+    </xsl:template>
+
+    <!-- turn each flakyFailure in to a rerunFailure and turn system-out/err in to a text node -->
+    <xsl:template match="flakyFailure">
+       <xsl:value-of select="text()"/>
+    </xsl:template>
+
+    <!-- turn each flakyFailure in to a rerunFailure and turn system-out/err in to a text node -->
+    <xsl:template match="flakyError">
+       <xsl:value-of select="text()"/>
+    </xsl:template>
+
+</xsl:stylesheet>

@@ -67,7 +67,7 @@ BRANCH=
 #Where all artifacts will be downloaded and processed in to a report
 WORK_DIR=
 #Should we reprocess xml test result, and then recompute reports? To be used when things go awry, or improve.
-RECOMPUTE=false
+RECOMPUTE="false"
 #If set, lets you grab a specific workflow_run_id's artifacts for testing.
 WORKFLOW_RUN_ID=
 
@@ -101,7 +101,7 @@ while getopts 'h:a:r:w:b:d:t:c:i:m' OPTION; do
       ALLURE_CONFIGURATION="$OPTARG"
       ;;
     m)
-      RECOMPUTE=true
+      RECOMPUTE="true"
       ;;
     ?)
       usage
@@ -182,10 +182,9 @@ for dir in $PROCESS_LIST; do
 
     # gather and transform the unit test xml files with a shell function of transform_junit_xml, should it exist.
     if [ "$( type transform_junit_xml 2>&1 > /dev/null ; echo $? )" = "0" ]; then
-      for xmlfile in "${work_dir}"*.xml; do
-        if [ -f "${xmlfile}" ]; then
-          transform_junit_xml "${xmlfile}"
-        fi
+      JUNITFILES=$(find "${work_dir}"/*.xml -maxdepth 1 -type f  || true)
+      for xmlfile in ${JUNITFILES}; do
+        transform_junit_xml "${xmlfile}"
       done
     fi
 
@@ -231,10 +230,19 @@ for dir in $PROCESS_LIST; do
     # generate an allure report for this build to get the history json file.
     # Disable allure analytics to save time.
     ALLURE_NO_ANALYTICS=1 allure generate --config "${work_dir}"/allure.yml --clean "${work_dir}" --output "${report_dir}"
+
+
+    JUNITFILES=$(find "${work_dir}"/*.xml -maxdepth 1 -type f  || true)
+    for junitxml in ${JUNITFILES}; do
+      # Step 5.1: if computing, push test results to github issues.
+      ( cd "${SCRIPT_DIR}"/update-gh-issues/; ./update-issues-flaky-tests.sh -t "$TOKEN" -r "$REPOSITORY" -j "${junitxml}" -w "https://github.com/${REPOSITORY}/actions/runs/${dir}" )
+    done
+
     LAST_HISTORY="${report_dir}"history
   else
     LAST_HISTORY="${report_dir}"history
   fi
+
 done
 
 #STEP 6:  Create a redirecting index.html file pointing to the latest report.
