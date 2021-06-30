@@ -57,7 +57,7 @@ BRANCH="auto"
 #Where all artifacts will be downloaded and processed in to a report
 WORK_DIR=
 #Should we reprocess xml test result, and then recompute reports? To be used when things go awry, or improve.
-RECOMPUTE=false
+RECOMPUTE="false"
 #If set, lets you grab a specific workflow_run_id's artifacts for testing.
 WORKFLOW_RUN_ID=
 
@@ -91,7 +91,7 @@ while getopts 'h:a:r:w:b:d:t:c:i:m' OPTION; do
       ALLURE_CONFIGURATION="$OPTARG"
       ;;
     m)
-      RECOMPUTE=true
+      RECOMPUTE="true"
       ;;
     ?)
       usage

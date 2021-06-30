@@ -52,5 +52,5 @@ runs:
         BRANCH: ${{ inputs.branch }}
         HISTORY: ${{ inputs.history }}
         WORKFLOW_RUN_ID: ${{ inputs.workflow_run_id }}
-        RECREATE: ${{ inputs.decompress }}
+        RECREATE: ${{ inputs.recreate }}
         ALLURE_CONFIG: ${{ inputs.allure_configuration }}
