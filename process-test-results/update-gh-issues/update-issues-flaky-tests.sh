@@ -112,9 +112,15 @@ done
 all_pages "https://api.github.com/search/issues?q=repo:${REPO}+type:issue+%22%5BFlaky%20Test%5D%22+NOT+Stale+in:title+label:${LABEL}+updated:>=${DATE}" known_issues.json
 jq '.[] | ((.number|tostring) + "@" + .title)' < known_issues.json | sed 's/^"//g' | sed 's/"$//g' > issues_to_names
 
+# Produces a single file in the current directory seperated by the lines referenced in the csplit a few lines down.
+# this will overwrite any all_flakes.txt files produced via prior executions in this directory of this script.
 xsltproc getComment.xml "$JUNIT_FILE" > all_flakes.txt
 
+# Removed any old files from working dir, as this script could be called multiple times in the same directory.
+# Deleting now rather than after pushing the data to github comments on an issue to allow devs to view the files if run locally.
 rm -rf ./flake* || true
+
+# Produces files like flake001, flake002, based on the lines of all_flakes.txt
 csplit -s -f flake -n 3 all_flakes.txt '/:::Start of a newly transformed test case flake:::/' || true
 
 echo Issues to open/update:
