@@ -22,15 +22,17 @@ jobs:
           workflow_run_id: ${{ github.event.workflow_run.id }}
           artifacts: test.download
           # the following two lines are default values included for clarity.
-          target_dir: ${{ github.workspace }}/downloads
+          # important to note that all paths are relative to the ${{ github.workspace }}, which is of the form:
+          # /home/runner/work/<org>/<repo>/
+          target_dir: ./downloads/
           decompress: true
       - name: Test that "test.download" got downloaded
         run: |
-          [[ -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
-          [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) = 1 ]
+          [[ -f  ./downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
+          [ $( ls downloads/ | wc -l ) = 1 ]
       - name: Test that "test.not-download" did not get downloaded
         run: |
-          [[ ! -f  ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
+          [[ ! -f  ./downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
 
   test-get-artifacts-multiple:
     runs-on: ubuntu-latest
@@ -47,8 +49,11 @@ jobs:
           branch: master
           # follow line is a default value included for clarity.
           history: 10
+      - name: Test the last push to master resulted in artifacts
+        run: |
+          [[ -f ./downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
+          [[ -f ./downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
+        if: ${{ github.event.workflow_run.head_branch == 'master' }}
       - name: Test that multiple workflow run's files got downloaded
         run: |
-          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.download/test-file.download ]]
-          [[ -f ${{ github.workspace }}/downloads/${{ github.event.workflow_run.id }}/artifacts/test.not-download/test-file.not-download ]]
           [ $( ls ${{ github.workspace }}/downloads/ | wc -l ) -gt 1 ]
