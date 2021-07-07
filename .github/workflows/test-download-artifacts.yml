@@ -22,6 +22,8 @@ jobs:
           workflow_run_id: ${{ github.event.workflow_run.id }}
           artifacts: test.download
           # the following two lines are default values included for clarity.
+          # important to note that all paths are relative to the ${{ github.workspace }}, which is of the form:
+          # /home/runner/work/<org>/<repo>/
           target_dir: ./downloads/
           decompress: true
       - name: Test that "test.download" got downloaded
