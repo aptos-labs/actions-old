@@ -12,6 +12,9 @@ inputs:
     description: whether to delete older comments with the given tag
     required: false
     default: false
+  hyperjump_url:
+    description: hyperjump webhook url
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

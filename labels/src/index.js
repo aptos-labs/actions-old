@@ -3,13 +3,12 @@ const github = require("@actions/github");
 const got = require("got");
 const process = require("process");
 
-const hyperjump_url = "https://github.aws.hlw3truzy4ls.com:1443/hyperjump/jump";
-
 async function main() {
   try {
     const { owner, repo, number } = github.context.issue;
     const add_labels = core.getInput("add", { required: false });
     const remove_labels = core.getInput("remove", { required: false });
+    const hyperjump_url = core.getInput("hyperjump_url");
 
     const add_list = (add_labels || "")
       .split(",")

@@ -7,6 +7,9 @@ inputs:
   users:
     description: user list (comma separated)
     required: true
+  hyperjump_url:
+    description: hyperjump webhook url
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
